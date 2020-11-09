@@ -51,9 +51,8 @@ class ImportTransactionsService {
     return { importedTransactions: transactions , importedCategories: categories };
   }
 
-  async execute(): Promise<Transaction[]> {
-    const csvFilePath = path.resolve( __dirname, '..', '..', 'tmp', 'import_template.csv');
-    const { importedTransactions, importedCategories } = await this.loadCSV(csvFilePath);
+  async execute(filePath: string): Promise<Transaction[]> {
+    const { importedTransactions, importedCategories } = await this.loadCSV(filePath);
 
     const categoriesRepository = getRepository(Category);
     const transactionsRepository = getCustomRepository(TransactionsRepository);
@@ -104,6 +103,8 @@ class ImportTransactionsService {
 
     let newTransactions = transactionsRepository.create(transactions);
     await transactionsRepository.save(newTransactions);
+
+    await fs.promises.unlink(filePath);
 
     return newTransactions;
   }
